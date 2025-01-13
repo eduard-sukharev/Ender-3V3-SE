@@ -252,7 +252,9 @@ void ProbeAcq::shakeZAxis(int times)
 void ProbeAcq::calMinZ()
 {
   double* valP_t = &this->valP[PI_COUNT]; //rock_开始没有*2，数组越界使用 20230204
-  double* posZ_t = &this->posZ[PI_COUNT]; //
+  #if ENABLED(SHOW_MSG)
+  double* posZ_t = &this->posZ[PI_COUNT];
+  #endif
   
   // 1、滤波  rock
   Filters::tFilter(this->valP, PI_COUNT * 2); 
@@ -590,7 +592,6 @@ void printTestResult(float *zTouch, float *zPress)
 //一次对高
 float Hight_One(xyz_float_t pressPos)
 {
-  float temp_value=0,zoffset_avg=0;
   float zTouch[1] = {0};
   float zPress[1] = {0};
   
@@ -604,7 +605,7 @@ float Hight_One(xyz_float_t pressPos)
   // CHECK_AND_RUN(isRunProByPress, FOR_LOOP_TIMES(i, 0, 3, {probeByPress(rdyPos[i], &zPress[i]); zPress[i] += NOZ_TEMP_OFT_MM;})); 
   CHECK_AND_RUN(isRunProByPress, FOR_LOOP_TIMES(i, 0, 1, {probeByPress(pressPos, &zPress[0]); zPress[0] += NOZ_TEMP_OFT_MM;}));      
   //4. 处理结果    
-  temp_value = (zPress[0] - zTouch[0]);
+  float temp_value = (zPress[0] - zTouch[0]);
   printTestResult(zTouch, zPress);      
   DO_BLOCKING_MOVE_TO_Z(5, 5);    
   return temp_value;
@@ -616,7 +617,7 @@ float Multiple_Hight(bool isRunProByPress, bool isRunProByTouch)
   float zoffset_value[3]={0};
   uint8_t loop_max=0,loop_num=0;
   xyz_float_t pressPos = PRESS_XYZ_POS;
-  float temp_value=0,temp_zoffset=0,temp_zoffset1=0,zoffset_avg=0;
+  float temp_zoffset=0,temp_zoffset1=0,zoffset_avg=0;
    for(loop_num=0;loop_num<ZOFFSET_REPEAT_NIN;loop_num++)
    {  
     pressPos.y-=(loop_num*5);    
@@ -716,13 +717,8 @@ bool getZOffset(bool isNozzleClr, bool isRunProByPress, bool isRunProByTouch, fl
 
   //1. 针对PLA耗材进行喷头擦式
   srand(millis());
-  float ret1 = rand() % 15 + 2; //生成1~10的随机数
-  // SERIAL_ECHOLNPAIR(" ret1=: ",ret1);
   xyz_float_t startPos = {rdyPos[0].x + (rdyPos[1].x - rdyPos[0].x) * 1 / 5-10, rdyPos[0].y + (rdyPos[2].y - rdyPos[0].y) * 2 / 5 + random(0, 9) - 4, 6};
-  // xyz_float_t startPos = {rdyPos[0].x + (rdyPos[1].x - rdyPos[0].x) * 1 / 5-10, rdyPos[0].y + (rdyPos[2].y - rdyPos[0].y) * 2 / 5 + 9 - 4, 6};
   xyz_float_t endPos =   {rdyPos[0].x + (rdyPos[1].x - rdyPos[0].x) * 3 / 5, startPos.y, 6};
-  // startPos.x+=(ret1+15);startPos.y+=(ret1+5);
-  // endPos.x+=(ret1+15);endPos.y=startPos.y;
    startPos.x=CLEAR_NOZZL_START_X;startPos.y=CLEAR_NOZZL_START_Y;
    endPos.x=CLEAR_NOZZL_END_X;endPos.y=CLEAR_NOZZL_END_Y;
   startPos.z=0;

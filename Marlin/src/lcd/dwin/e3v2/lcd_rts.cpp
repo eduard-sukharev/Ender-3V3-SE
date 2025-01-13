@@ -207,23 +207,19 @@ static const char * gcode_information_name[] =
 #define READ_PIC_TIME            500  //读取图片预览数据超时时间
 uint8_t read_gcode_model_information(void)
 { 
-  millis_t ms = millis();
   millis_t next_read_pic_ms = millis()+READ_PIC_TIME;
   int32_t  temp_value=0;
   char buf[50];
   char buf_true[50] = {0};
   unsigned char i,j,k;
   char *char_pos;
-  char ret;
+  char ret = '\0';
   unsigned char buf_state = 0;
   uint8_t loop_max=0;
-  // SERIAL_ECHOLNPAIR("  millis()=: ", millis()); // rock_20210909
-  // SERIAL_ECHOLNPAIR(" next_read_pic_ms=: ", next_read_pic_ms); // rock_20210909
   while(ret != ';')
   {
     temp_value= (millis()-next_read_pic_ms);
     ret = card.get();
-    // SERIAL_ECHOLNPAIR(" temp_value=: ",  temp_value); // rock_20210909 
     if(temp_value>0)
     {
       return PIC_MISS_ERR;
@@ -239,7 +235,6 @@ uint8_t read_gcode_model_information(void)
     next_read_pic_ms = millis()+READ_PIC_TIME;
     while(ret != ';')
     {
-      //temp_value= (millis()-next_read_pic_ms);
       ret = card.get();
       buf[i] = ret;
       i++;
@@ -250,8 +245,6 @@ uint8_t read_gcode_model_information(void)
       }
       // 结束,buf[]包含结束';'
     }
-    // SERIAL_ECHO_MSG("buf:",buf);
-    // for(k = 0;k < 9;k++)
     for(k = 0;k < 3;k++)
     {
       // 查找关键字
@@ -276,11 +269,9 @@ uint8_t read_gcode_model_information(void)
             break;
           }
         }
-        // SERIAL_ECHOLNPAIR(" strlen(buf_true)=: ", strlen(buf_true)); // rock_20210909
         if(' '==buf_true[0])strncpy(buf_true, buf_true+1,strlen(buf_true));//去除字符串前面的空格
         i = 0;
         memset(buf, 0, sizeof(buf));
-        // SERIAL_ECHOLN(buf_true);
         switch(k)
         {
           case 0:
@@ -311,26 +302,9 @@ uint8_t read_gcode_model_information(void)
     ret = 0;  //清空ret
     if(buf_state)
     {
-      /*
-      SERIAL_ECHOLN("model_information end");
-      SERIAL_ECHOLN(model_information.pre_time);
-      SERIAL_ECHOLN(model_information.height);
-      SERIAL_ECHOLN(model_information.MAXX);
-      SERIAL_ECHOLN(model_information.MAXY);
-      SERIAL_ECHOLN(model_information.MAXZ);
-      SERIAL_ECHOLN(model_information.MINX);
-      SERIAL_ECHOLN(model_information.MINY);
-      SERIAL_ECHOLN(model_information.MINZ);
-      SERIAL_ECHOLN(model_information.filament);
-      */
       // Exit the loop
       return PIC_OK;
     }
-    // else 
-    // {
-    //    SERIAL_ECHOLNPAIR(" buf_state4444=: ", buf_state); // rock_20210909
-    //   return PIC_MISS_ERR;
-    // }
   }
   return PIC_MISS_ERR;
   gcode_information_err:
@@ -343,8 +317,6 @@ uint8_t read_gcode_model_information(void)
     memset(model_information.MAXX, 0, sizeof(model_information.MAXX));
     memset(model_information.MAXY, 0, sizeof(model_information.MAXY));
     memset(model_information.MAXZ, 0, sizeof(model_information.MAXZ));
-    // SERIAL_ECHOLN("model_information error");
-    // SERIAL_ECHOLNPAIR(" buf_state5554=: ", buf_state); // rock_20210909
     return PIC_MISS_ERR;
 }
 
@@ -772,47 +744,23 @@ uint8_t gcodePicDataSendToDwin(char *fileName, unsigned int jpgAddr, unsigned ch
 uint8_t gcodePicDataSendToDwin(char *fileName, unsigned int jpgAddr, unsigned char jpgFormat, unsigned char jpgResolution)
 {
   char ret;
-  char returyCnt = 0; 
 
- 
- 
   HAL_watchdog_refresh();
   SERIAL_ECHO("\r\n gcodePicDataSendToDwin fileName = ");
   SERIAL_ECHO(fileName);
   card.openFileRead(fileName);
-  // SERIAL_ECHOLNPAIR(" ret333=: ", ret); // rock_20210909
-  // msTest = millis();
-  // while (1)
-  // {
-    ret=read_gcode_model_information();
-    // 当gcode中没有pic时，直接返回
-    if (ret == PIC_MISS_ERR)
-    {
-      card.closefile();
-      return PIC_MISS_ERR;
-    }
-    /*
-    else if ((ret == PIC_FORMAT_ERR) || (ret == PIC_RESOLITION_ERR))
-    {
-      // 当格式或大小错误，继续往下判断
-      if (++returyCnt >= 3)
-      {
-        card.closefile();
-        return PIC_MISS_ERR;
-      }
-      // else
-      // {
-      //   continue;
-      // }
-    }
-    */
-    else
-    {
-      card.closefile();
-      return PIC_OK;
-    }
-  // }
-  
+  ret=read_gcode_model_information();
+  // 当gcode中没有pic时，直接返回
+  if (ret == PIC_MISS_ERR)
+  {
+    card.closefile();
+    return PIC_MISS_ERR;
+  }
+  else
+  {
+    card.closefile();
+    return PIC_OK;
+  }
 }
 /*
 

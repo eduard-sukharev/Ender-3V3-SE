@@ -206,7 +206,7 @@ void UI_SHOW_t::RTS_SndData(long n, unsigned long addr, unsigned long addr1, uns
 
 void UI_SHOW_t::RTS_SndData(unsigned long n, unsigned long _screen_id, unsigned long _control_id, unsigned long cmd/*= VarAddr_W*/)
 {
-  snddat.head == CMD_HEAD;
+  snddat.head = CMD_HEAD;
   snddat.cmd_type = cmd >> 8;     // 命令类型
   snddat.ctrl_msg = cmd & 0x00FF; // 消息类型
   snddat.screen_id = _screen_id;
@@ -670,11 +670,8 @@ bool UI_SHOW_t::UI_SendJpegDateHandshake(unsigned long size, const char *path)
 {
   static char buf[DACAI_JPG_BYTES_PER_BUF] = {0};
   unsigned long jpgSize = size;
-  static uint8_t sn = 0;
   uint16_t i, j;
-  uint16_t checkSum = 0;
   int sendPacket;
-  uint32_t MS = millis();
 
   databuf[0] = 0xAA;
   databuf[1] = 0xC0;

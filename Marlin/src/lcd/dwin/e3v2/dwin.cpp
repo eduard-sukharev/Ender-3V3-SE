@@ -277,17 +277,16 @@ static void pause_resume_feedstock(uint16_t _distance,uint16_t _feedRate)
 
 void In_out_feedtock_level(uint16_t _distance,uint16_t _feedRate,bool dir)
 {
-  char cmd[20], str_1[16];
+  char cmd[20];
   float olde = current_position.e,differ_value=0;
-  if(current_position.e<_distance)differ_value =(_distance-current_position.e);
-  else differ_value=0;
+  if(current_position.e<_distance) {
+    differ_value =(_distance-current_position.e);
+  }
   if(dir)
   {
     current_position.e +=_distance;
     line_to_current_position(_feedRate);
-  }
-  else  //回抽
-  {
+  } else { //回抽
     current_position.e -=_distance;
     line_to_current_position(_feedRate);    
   }
@@ -300,7 +299,7 @@ void In_out_feedtock_level(uint16_t _distance,uint16_t _feedRate,bool dir)
 
 void In_out_feedtock(uint16_t _distance,uint16_t _feedRate,bool dir)
 {
-  char cmd[20], str_1[16];
+  char cmd[20];
   float olde = current_position.e,differ_value=0;
   if(current_position.e<_distance)differ_value =(_distance-current_position.e);
   else differ_value=0;
@@ -2279,11 +2278,10 @@ static uint16_t Choose_BG_Color(float offset_value)
     uint16_t rec_LU_x,rec_LU_y,rec_RD_x,rec_RD_y;
     uint16_t rec_fill_color;
     float z_offset_value=0;
-    static float first_num=0;
     if(HMI_flag.Need_boot_flag)z_offset_value=G29_level_num;
     else z_offset_value=z_values[mesh_Count->x][mesh_Count->y];
     if(checkkey!=Leveling&&checkkey!=Level_Value_Edit)return;//只有在调平界面才运行显示调平值
-     
+
     //计算矩形区域  
     rec_LU_x=Rect_LU_X_POS + mesh_Count->x * X_Axis_Interval;
     rec_LU_y=Rect_LU_Y_POS - mesh_Count->y * Y_Axis_Interval;
@@ -3950,14 +3948,13 @@ void SDCard_Folder(char * const dirname)
 void HMI_SDCardUpdate()
 {
   // The card pulling action is not detected when the interface returns to home, add ||HMI_flag.disallow_recovery_flag
-  static uint8_t stat=false;
   if (HMI_flag.home_flag || HMI_flag.disallow_recovery_flag) 
   {
     return;
   }
+  
   if (DWIN_lcd_sd_status != card.isMounted()) //flag.mounted
   {
-    stat=false;
     DWIN_lcd_sd_status = card.isMounted();
     if (DWIN_lcd_sd_status)
     {
@@ -3984,19 +3981,6 @@ void HMI_SDCardUpdate()
     }
     DWIN_UpdateLCD();
   }
-  else 
-  {
-    // static uint8_t stat = uint8_t(IS_SD_INSERTED());
-    // if(stat)
-    // {
-    //   SERIAL_ECHOLNPAIR("HMI_SDCardUpdate: ", DWIN_lcd_sd_status);
-    //   card.mount();
-    //   SERIAL_ECHOLNPAIR("card.isMounted(): ", card.isMounted());
-    // }
-    
-  // flag.mounted
-  }
-
 }
 
 //
@@ -4506,32 +4490,22 @@ static void Image_Preview_Information_Show(uint8_t ret)
       DWIN_Draw_String(false, true, font8x16, Popup_Text_Color, Color_Bg_Black, WORD_TIME_X+DATA_OFFSET_X+52, WORD_TIME_Y+DATA_OFFSET_Y, F("0"));
       DWIN_Draw_String(false, true, font8x16, Popup_Text_Color, Color_Bg_Black, WORD_LENTH_X+DATA_OFFSET_X+52, WORD_LENTH_Y+DATA_OFFSET_Y, F("0"));
       DWIN_Draw_String(false, true, font8x16, Popup_Text_Color, Color_Bg_Black, WORD_HIGH_X+DATA_OFFSET_X+52, WORD_HIGH_Y+DATA_OFFSET_Y, F("0"));
-      // DWIN_Draw_String(false, true, font8x16, Popup_Text_Color, Color_Bg_Black, 175, 183, F("0"));
     }
     else
     {
       int predict_time;
-      float height1, height2, height3, volume, Filament;
+      float height3, Filament;
       char char_buf[20];
-      char char_buf1[20];
       char str_1[20] = {0};
       predict_time=atoi((char*)model_information.pre_time);
-      height1 = atof((char*)model_information.MAXZ);
-      height2 = atof((char*)model_information.MINZ);
-      // height3 = height1 - height2;
       height3 = atof((char*)model_information.height);
 
-      // sprintf(char_buf,"%.1f",height3);
       sprintf_P(char_buf, PSTR("%smm"), dtostrf(height3, 1, 1, str_1));
       Filament = atof((char*)model_information.filament);
       
-      volume = 2.4040625 * Filament;
-      // sprintf(char_buf1,"%.1f",volume);
-      // sprintf_P(char_buf1, PSTR("%smm^3"), dtostrf(volume, 1, 1, str_1));
       Isplay_Estimated_Time(predict_time); // 显示剩余时间
       DWIN_Draw_String(false,true,font8x16, Popup_Text_Color, Color_Bg_Black, WORD_LENTH_X+DATA_OFFSET_X, WORD_LENTH_Y+DATA_OFFSET_Y, &model_information.filament[0]);
       DWIN_Draw_String(false,true,font8x16, Popup_Text_Color, Color_Bg_Black, WORD_HIGH_X+DATA_OFFSET_X, WORD_HIGH_Y+DATA_OFFSET_Y, &model_information.height[0]);  // 高度
-      // DWIN_Draw_String(false,true,font8x16, Popup_Text_Color, Color_Bg_Black, 175, 183, char_buf1);   // 体积
     }
   
   #endif
@@ -4785,8 +4759,8 @@ void HMI_Printing()
         {   //确定 
           Show_JPN_print_title();
           ICON_Pause();
-          char cmd[40];
-          cmd[0] = '\0';
+          // char cmd[40];
+          // cmd[0] = '\0';
           #if BOTH(HAS_HEATED_BED, PAUSE_HEAT)
             //if (resume_bed_temp) sprintf_P(cmd, PSTR("M190 S%i\n"), resume_bed_temp); //rock_20210901 
           #endif
@@ -6291,10 +6265,6 @@ void Draw_HM_PID_Set()
     DWIN_ICON_Show(HMI_flag.language ,LANGUAGE_Set_PID_Manually, TITLE_X, TITLE_Y); //运动
     Draw_Back_First();
     LOOP_L_N(i, 5) Draw_Menu_Line(i + 1, ICON_HM_PID_NOZZ_P + i);
-    auto say_max_speed = [](const uint16_t row) 
-    {
-      DWIN_ICON_Show(HMI_flag.language, LANGUAGE_MaxSpeed, 70, row);
-    };
     // EEPROM里面读出来的值到显示到屏幕上
     HMI_ValueStruct.HM_PID_Value[1]=PID_PARAM(Kp, 0);
     HMI_ValueStruct.HM_PID_Value[2]=unscalePID_i(PID_PARAM(Ki, 0));
@@ -6353,10 +6323,6 @@ void Draw_Max_Speed_Menu()
   if (HMI_flag.language < Language_Max)
   {
     DWIN_ICON_Show(HMI_flag.language, LANGUAGE_mspeed_title, TITLE_X, TITLE_Y); // 运动
-    auto say_max_speed = [](const uint16_t row)
-    {
-      DWIN_ICON_Show(HMI_flag.language ,LANGUAGE_MaxSpeed, 70, row);
-    };
     DWIN_ICON_Show(HMI_flag.language, LANGUAGE_MAX_SPEEDX, 42, MBASE(1) + JPN_OFFSET);
     DWIN_ICON_Show(HMI_flag.language, LANGUAGE_MAX_SPEEDY, 42, MBASE(2) + JPN_OFFSET);
     DWIN_ICON_Show(HMI_flag.language, LANGUAGE_MAX_SPEEDZ, 42, MBASE(3) + JPN_OFFSET);   // "Max speed"
